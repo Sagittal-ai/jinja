@@ -903,6 +903,27 @@ class Undefined:
         return "Undefined"
 
 
+class LoggingUndefined(Undefined):
+    """An undefined that logs a warning when accessed."""
+
+    def __str__(self) -> str:
+        self._log_warning()
+        return super().__str__()
+
+    def __iter__(self) -> t.Iterator[t.Any]:
+        self._log_warning()
+        return super().__iter__()
+
+    def __bool__(self) -> bool:
+        self._log_warning()
+        return super().__bool__()
+
+    def _log_warning(self) -> None:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning("Accessed undefined variable: %s", self._undefined_message)
+
+
 def make_logging_undefined(
     logger: t.Optional["logging.Logger"] = None, base: t.Type[Undefined] = Undefined
 ) -> t.Type[Undefined]:

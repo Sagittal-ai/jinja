@@ -1,7 +1,10 @@
+```python
 import itertools
+import logging
 
+import pytest
 from jinja2 import Template
-from jinja2.runtime import LoopContext
+from jinja2.runtime import LoopContext, LoggingUndefined
 
 TEST_IDX_TEMPLATE_STR_1 = (
     "[{% for i in lst|reverse %}(len={{ loop.length }},"
@@ -73,3 +76,12 @@ def test_mock_not_pass_arg_marker():
     out = t.render(calc=Calc())
     # Would be "1" if context argument was passed.
     assert out == "0"
+
+
+def test_logging_undefined(caplog):
+    env = Template.environment_class(undefined=LoggingUndefined)
+    template = env.from_string("{{ non_existent_variable }}")
+    with caplog.at_level(logging.WARNING):
+        template.render()
+    assert "Accessed undefined variable" in caplog.text
+```
